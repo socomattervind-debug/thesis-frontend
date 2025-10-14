@@ -1,25 +1,25 @@
 import { useRouter } from "expo-router";
 import {
-  Text,
-  View,
-  StyleSheet,
   ImageBackground,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function Dashboard() {
   const router = useRouter();
 
   const handleRegistration = () => {
-    router.push("/registration/registration");
+    router.push("/fireFighterRegister/fireFighterRegistration");
   };
 
   const handleLogin = () => {
-    router.push("/loginDashboard/loginDashboard");
+    router.push("/fireFighterLogin/fireFighterLogin");
   };
 
   const handleAdmin = () => {
-    router.push("/adminLogin/adminLogin");
+    router.push("/ViewRecords/viewRecords");
   };
 
   return (
@@ -42,7 +42,7 @@ export default function Dashboard() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.buttonAsAdmin} onPress={handleAdmin}>
-            <Text style={styles.buttonText}>LOG IN AS ADMIN</Text>
+            <Text style={styles.buttonText}>View All Records</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>

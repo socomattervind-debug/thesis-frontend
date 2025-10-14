@@ -1,35 +1,45 @@
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
-  ImageBackground,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { fireFighterLogin } from "../service/api/fireFighterLogin";
 
 export default function FireFighterLogin() {
   const router = useRouter();
 
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!fullName || !password) {
       Alert.alert("Validation Error", "Please fill in all fields.");
       return;
     }
 
-    Alert.alert("Login", `Full Name: ${fullName}\nPassword: ${password}`);
-    console.log("Logging in:", fullName, password);
-
-    setFullName("");
-    setPassword("");
+    setLoading(true);
+    try {
+      const result = await fireFighterLogin(fullName, password);
+      console.log(result);
+      Alert.alert("Success", "Login successful!");
+      router.push("/fireFighterDashboard/fireFighterDashboard");
+      setFullName("");
+      setPassword("");
+    } catch (error) {
+      Alert.alert("Login Failed", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = () => {
@@ -68,8 +78,14 @@ export default function FireFighterLogin() {
               secureTextEntry
             />
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Login</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Logging in..." : "Login"}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
