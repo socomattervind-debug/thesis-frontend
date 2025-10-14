@@ -80,6 +80,7 @@ export default function FireFighterRegistration() {
               placeholder="Username(ex:soco.dampalit)"
               value={fullName}
               onChangeText={setFullName}
+              placeholderTextColor="#000"
             />
 
             <TextInput
@@ -88,6 +89,7 @@ export default function FireFighterRegistration() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              placeholderTextColor="#000"
             />
 
             <TextInput
@@ -96,6 +98,7 @@ export default function FireFighterRegistration() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
+              placeholderTextColor="#000"
             />
 
             <TextInput
@@ -103,6 +106,7 @@ export default function FireFighterRegistration() {
               placeholder="Barangay"
               value={barangay}
               onChangeText={setBarangay}
+              placeholderTextColor="#000"
             />
 
             {/* Sign Up Button */}
@@ -151,6 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
     textAlign: "center",
+    color: "#000",
   },
   button: {
     width: 250,
@@ -161,7 +166,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  buttonText: { color: "#161515ff", fontSize: 18, fontWeight: "bold" },
   signInContainer: { marginTop: 15 },
   signInText: { fontSize: 16, color: "#000" },
   signInLink: { color: "#b30d0dff", fontWeight: "bold" },

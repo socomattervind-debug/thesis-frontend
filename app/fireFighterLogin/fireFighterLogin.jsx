@@ -63,7 +63,7 @@ export default function FireFighterLogin() {
           >
             <TextInput
               style={styles.input}
-              placeholder="soco.dampalit"
+              placeholder="(e.g., soco.dampalit)"
               placeholderTextColor="#fff"
               value={fullName}
               onChangeText={setFullName}
