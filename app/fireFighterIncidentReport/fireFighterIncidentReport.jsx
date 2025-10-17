@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   ImageBackground,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -37,13 +38,11 @@ export default function FireFighterIncidentReport() {
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       const dateObj = new Date(date);
       if (!isNaN(dateObj)) {
-        formattedDate = dateObj
-          .toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-          .replace(/ /g, ", ");
+        formattedDate = dateObj.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
       }
     }
 
@@ -78,16 +77,21 @@ export default function FireFighterIncidentReport() {
   };
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      enableOnAndroid={true}
-      extraScrollHeight={100}
-      keyboardShouldPersistTaps="handled"
-    >
+    <View style={styles.wrapper}>
+      {/* 🔥 Background Image */}
       <ImageBackground
         source={require("../../assets/images/fire-fighter-incident-report-background.png")}
         style={styles.background}
         resizeMode="cover"
+      />
+
+      {/* 🔥 Scrollable Form */}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContainer}
+        enableOnAndroid={true}
+        extraScrollHeight={100}
+        keyboardShouldPersistTaps="handled"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
       >
         <View style={styles.container}>
           <TextInput
@@ -113,7 +117,7 @@ export default function FireFighterIncidentReport() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Date (e.g. 2025-10-07 or October, 7, 2025)"
+            placeholder="Date (e.g. 2025-10-07 or October 7, 2025)"
             value={date}
             onChangeText={setDate}
             placeholderTextColor="#333"
@@ -164,35 +168,53 @@ export default function FireFighterIncidentReport() {
             <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>
         </View>
-      </ImageBackground>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
   background: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: width,
     height: height,
-    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 40,
   },
   container: {
     flex: 1,
-    justifyContent: "center",
+    width: "100%",
     paddingHorizontal: 20,
-    marginTop: 120,
+    justifyContent: "center",
   },
   input: {
-    backgroundColor: "rgba(255,255,255,0.8)",
+    backgroundColor: "rgba(255,255,255,0.85)",
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
+    position: "relative",
+    top: 120,
   },
   pickerContainer: {
-    backgroundColor: "rgba(255,255,255,0.8)",
+    backgroundColor: "rgba(255,255,255,0.85)",
     borderRadius: 12,
-    marginBottom: 15,
+    marginBottom: 10,
     paddingHorizontal: 10,
+    position: "relative",
+    top: 120,
   },
   label: {
     color: "#333",
@@ -210,10 +232,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 10,
+    position: "relative",
+    top: 110,
+    width: "150%",
+    left: -20,
   },
   submitButtonText: {
     color: "#000",
     fontWeight: "bold",
     fontSize: 18,
+    marginRight: 120,
   },
 });

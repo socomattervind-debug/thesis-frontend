@@ -298,8 +298,8 @@ const styles = StyleSheet.create({
   routeText: { color: "white", fontSize: 14 },
   modeButton: {
     position: "absolute",
-    top: 100,
-    left: 20,
+    top: 650,
+    right: 20,
     backgroundColor: "#333",
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -308,8 +308,8 @@ const styles = StyleSheet.create({
   },
   driveButton: {
     position: "absolute",
-    top: 150,
-    left: 20,
+    top: 605,
+    right: 20,
     backgroundColor: "#1a73e8",
     paddingVertical: 10,
     paddingHorizontal: 15,

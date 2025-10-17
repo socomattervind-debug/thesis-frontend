@@ -32,11 +32,15 @@ export default function ViewRecords() {
   }, []);
 
   return (
-    <ImageBackground
-      source={require("../../assets/images/view-record-background.png")}
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <View style={styles.wrapper}>
+      {/* ✅ Fullscreen Background Image */}
+      <ImageBackground
+        source={require("../../assets/images/view-record-background.png")}
+        style={styles.background}
+        resizeMode="cover"
+      />
+
+      {/* ✅ Overlay container for content */}
       <View style={styles.container}>
         {loading ? (
           <View style={styles.placeholder}>
@@ -93,7 +97,7 @@ export default function ViewRecords() {
           />
         )}
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -113,8 +117,17 @@ const getSeverityStyle = (severity) => {
 };
 
 const styles = StyleSheet.create({
-  background: {
+  wrapper: {
     flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  background: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: width,
     height: height,
   },

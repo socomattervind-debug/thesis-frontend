@@ -1,18 +1,18 @@
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
-  ImageBackground,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { registerFireFighter } from "../service/api/RegisterFireFighter";
-import { useRouter } from "expo-router";
 
 export default function FireFighterRegistration() {
   const router = useRouter();
@@ -156,6 +156,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     color: "#000",
+    marginTop: 10,
+    position: "relative",
+    top: 30,
   },
   button: {
     width: 250,
@@ -163,7 +166,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 40,
   },
 
   buttonText: { color: "#161515ff", fontSize: 18, fontWeight: "bold" },

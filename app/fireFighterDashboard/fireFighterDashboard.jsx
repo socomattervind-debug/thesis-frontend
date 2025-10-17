@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 10,
-    marginTop: 70,
+    marginTop: 110,
   },
   screen: {
     flex: 1,
