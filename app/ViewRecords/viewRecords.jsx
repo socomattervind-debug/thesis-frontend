@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
   ImageBackground,
   StyleSheet,
@@ -9,8 +8,6 @@ import {
   View,
 } from "react-native";
 import { getFireIncidentRecords } from "../service/api/fireFighterGetRecords";
-
-const { width, height } = Dimensions.get("window");
 
 export default function ViewRecords() {
   const [records, setRecords] = useState([]);
@@ -38,65 +35,70 @@ export default function ViewRecords() {
         source={require("../../assets/images/view-record-background.png")}
         style={styles.background}
         resizeMode="cover"
-      />
+      >
+        {/* ✅ Dark overlay for better readability */}
+        <View style={styles.overlay} />
 
-      {/* ✅ Overlay container for content */}
-      <View style={styles.container}>
-        {loading ? (
-          <View style={styles.placeholder}>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.placeholderText}>Loading records...</Text>
-          </View>
-        ) : records.length === 0 ? (
-          <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>No incident records yet.</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={records}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Text style={styles.label}>
-                  City: <Text style={styles.value}>{item.city}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Barangay: <Text style={styles.value}>{item.barangay}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Address: <Text style={styles.value}>{item.address}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Date: <Text style={styles.value}>{item.date}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Time Start:{" "}
-                  <Text style={styles.value}>{item.timeArrival}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Time End:{" "}
-                  <Text style={styles.value}>{item.timeFinished}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Cause: <Text style={styles.value}>{item.cause}</Text>
-                </Text>
-                <Text style={styles.label}>
-                  Severity:{" "}
-                  <Text
-                    style={[
-                      styles.value,
-                      styles.severity,
-                      getSeverityStyle(item.severity),
-                    ]}
-                  >
-                    {item.severity}
+        {/* ✅ Actual Content */}
+        <View style={styles.container}>
+          {loading ? (
+            <View style={styles.placeholder}>
+              <ActivityIndicator size="large" color="#fff" />
+              <Text style={styles.placeholderText}>Loading records...</Text>
+            </View>
+          ) : records.length === 0 ? (
+            <View style={styles.placeholder}>
+              <Text style={styles.placeholderText}>
+                No incident records yet.
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={records}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <View style={styles.card}>
+                  <Text style={styles.label}>
+                    City: <Text style={styles.value}>{item.city}</Text>
                   </Text>
-                </Text>
-              </View>
-            )}
-          />
-        )}
-      </View>
+                  <Text style={styles.label}>
+                    Barangay: <Text style={styles.value}>{item.barangay}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Address: <Text style={styles.value}>{item.address}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Date: <Text style={styles.value}>{item.date}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Time Start:{" "}
+                    <Text style={styles.value}>{item.timeArrival}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Time End:{" "}
+                    <Text style={styles.value}>{item.timeFinished}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Cause: <Text style={styles.value}>{item.cause}</Text>
+                  </Text>
+                  <Text style={styles.label}>
+                    Severity:{" "}
+                    <Text
+                      style={[
+                        styles.value,
+                        styles.severity,
+                        getSeverityStyle(item.severity),
+                      ]}
+                    >
+                      {item.severity}
+                    </Text>
+                  </Text>
+                </View>
+              )}
+            />
+          )}
+        </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -119,17 +121,16 @@ const getSeverityStyle = (severity) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    width: "100%",
-    height: "100%",
   },
   background: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: width,
-    height: height,
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // optional dark overlay
   },
   container: {
     flex: 1,
