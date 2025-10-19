@@ -1,8 +1,12 @@
 import * as Location from "expo-location";
-import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
+  BackHandler,
+  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -14,13 +18,20 @@ import DemoMap from "../demoMap/demoMap";
 import FireFighterIncidentReport from "../fireFighterIncidentReport/fireFighterIncidentReport";
 import { getCoordinates } from "../service/api/fireFighterRoutes";
 
-export default function FireFighterDashboard() {
+const { width, height } = Dimensions.get("window");
+
+export default function FireFighterDashboard({ navigation }) {
   const [screen, setScreen] = useState("dashboard");
   const [coords, setCoords] = useState(null);
   const [hydrantCoords, setHydrantCoords] = useState(null);
   const [hydrants, setHydrants] = useState([]);
   const [origin, setOrigin] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+  const AUTO_LOGOUT_TIME = 2 * 60 * 1000; // 2 minutes
+  const inactivityTimer = useRef(null);
 
   const hydrantList = [
     { id: 1, name: "Hydrant 1", latitude: 14.6695, longitude: 120.9388 },
@@ -58,11 +69,8 @@ export default function FireFighterDashboard() {
     if (screen === "extract") {
       setLoading(true);
       getCoordinates()
-        .then((data) => {
-          console.log("Fetched coords:", data);
-          setCoords(data);
-        })
-        .catch((err) => console.error("Failed to fetch coords:", err))
+        .then((data) => setCoords(data))
+        .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
   }, [screen]);
@@ -72,7 +80,7 @@ export default function FireFighterDashboard() {
     const socket = io("https://thesis-backend-zk2j.onrender.com");
 
     socket.on("coordinatesUpdated", (newCoord) => {
-      const updated = {
+      setCoords({
         origin: {
           latitude: newCoord.origin.latitude,
           longitude: newCoord.origin.longitude,
@@ -81,8 +89,7 @@ export default function FireFighterDashboard() {
           latitude: newCoord.destination.latitude,
           longitude: newCoord.destination.longitude,
         },
-      };
-      setCoords(updated);
+      });
       console.log("🚨 New fire incident detected!");
     });
 
@@ -113,7 +120,6 @@ export default function FireFighterDashboard() {
               }),
             }
           );
-
           const data = await response.json();
           const summary = data?.features?.[0]?.properties?.summary;
           return {
@@ -126,19 +132,88 @@ export default function FireFighterDashboard() {
 
       setHydrants(results);
     } catch (err) {
-      console.error("Error fetching hydrant distances:", err);
+      console.error(err);
       Alert.alert("Error", "Failed to fetch hydrant routes.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch hydrant distances when entering hydrant screen
   useEffect(() => {
     if (screen === "hydrant" && origin) {
       fetchHydrantRoutes();
     }
   }, [screen, origin]);
+
+  // Hardware Back Action
+  useEffect(() => {
+    const backAction = () => {
+      if (screen === "hydrant" && hydrantCoords) {
+        setHydrantCoords(null);
+        return true;
+      } else if (screen !== "dashboard") {
+        setScreen("dashboard");
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    return () => backHandler.remove();
+  }, [screen, hydrantCoords]);
+
+  // ✅ Logout function
+  const handleLogout = (type = "manual") => {
+    if (type === "manual") {
+      Alert.alert(
+        "Confirm Logout",
+        "Are you sure you want to logout?",
+        [
+          {
+            text: "No",
+            style: "cancel",
+          },
+          {
+            text: "Yes",
+            onPress: () => {
+              console.log("✅ User logged out manually.");
+              router.replace("/fireFighterLogin/fireFighterLogin");
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } else {
+      Alert.alert(
+        "Session Expired",
+        "You have been logged out due to inactivity."
+      );
+      console.log("⏰ Auto logout due to inactivity.");
+      router.replace("/fireFighterLogin/fireFighterLogin");
+    }
+  };
+
+  // reset timer for time out
+  const resetTimer = () => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    inactivityTimer.current = setTimeout(
+      () => handleLogout("auto"),
+      AUTO_LOGOUT_TIME
+    );
+  };
+
+  // ✅ Setup auto logout on inactivity
+  useEffect(() => {
+    resetTimer();
+    const subscription = AppState.addEventListener("change", resetTimer);
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      subscription.remove();
+    };
+  }, []);
 
   // ✅ Screen Renderer
   const renderScreen = () => {
@@ -146,7 +221,7 @@ export default function FireFighterDashboard() {
       case "extract":
         return (
           <View style={{ flex: 1 }}>
-            {coords && coords.destination ? (
+            {coords?.destination ? (
               <DemoMap destination={coords.destination} type="fire" />
             ) : (
               <View style={styles.center}>
@@ -160,26 +235,32 @@ export default function FireFighterDashboard() {
                 style={{ ...StyleSheet.absoluteFillObject, zIndex: 10 }}
               />
             )}
-            <BackButton onPress={() => setScreen("dashboard")} />
           </View>
         );
 
       case "hydrant":
         return (
-          <View style={{ flex: 1, padding: 10 }}>
+          <View style={{ flex: 1, padding: width * 0.025 }}>
             {!hydrantCoords ? (
               <View style={styles.centered}>
-                <Text style={styles.hydrantHeader}>
+                <Text
+                  style={[
+                    styles.hydrantHeader,
+                    { marginTop: height * 0.15, fontSize: width * 0.06 },
+                  ]}
+                >
                   Choose a Fire Hydrant Location:
                 </Text>
-
                 {loading ? (
                   <ActivityIndicator size="large" color="#b30d0d" />
                 ) : (
                   hydrants.map((item) => (
                     <TouchableOpacity
                       key={item.id}
-                      style={styles.hydrantOption}
+                      style={[
+                        styles.hydrantOption,
+                        { padding: height * 0.015 },
+                      ]}
                       onPress={() =>
                         setHydrantCoords({
                           destination: {
@@ -190,31 +271,22 @@ export default function FireFighterDashboard() {
                         })
                       }
                     >
-                      <Text style={styles.hydrantText}>
+                      <Text
+                        style={[styles.hydrantText, { fontSize: width * 0.04 }]}
+                      >
                         💧 {item.name}{" "}
-                        <Text style={{ color: "#555", fontSize: 14 }}>
+                        <Text
+                          style={{ color: "#555", fontSize: width * 0.035 }}
+                        >
                           (Distance: {item.distance} km • {item.duration} mins)
                         </Text>
                       </Text>
                     </TouchableOpacity>
                   ))
                 )}
-
-                <BackButton onPress={() => setScreen("dashboard")} />
               </View>
             ) : (
-              <>
-                <DemoMap
-                  destination={hydrantCoords.destination}
-                  type="hydrant"
-                />
-                <TouchableOpacity
-                  style={styles.backButtonOverlay}
-                  onPress={() => setHydrantCoords(null)}
-                >
-                  <Text style={styles.backText}>⬅ Choose Another Hydrant</Text>
-                </TouchableOpacity>
-              </>
+              <DemoMap destination={hydrantCoords.destination} type="hydrant" />
             )}
           </View>
         );
@@ -223,14 +295,20 @@ export default function FireFighterDashboard() {
         return (
           <View style={styles.screen}>
             <FireFighterIncidentReport />
-            <BackButton onPress={() => setScreen("dashboard")} />
           </View>
         );
 
       default:
         return (
           <SafeAreaView style={styles.dashboard}>
-            <Text style={styles.header}>🔥 Firefighter Dashboard</Text>
+            <Text
+              style={[
+                styles.header,
+                { fontSize: width * 0.07, marginBottom: height * 0.05 },
+              ]}
+            >
+              🔥 Firefighter Dashboard
+            </Text>
             <DashboardButton
               text="📍 Extract Address"
               onPress={() => setScreen("extract")}
@@ -243,6 +321,10 @@ export default function FireFighterDashboard() {
               text="📝 Add Records"
               onPress={() => setScreen("records")}
             />
+            <DashboardButton
+              text="🚪 Logout"
+              onPress={() => handleLogout("manual")}
+            />
           </SafeAreaView>
         );
     }
@@ -252,15 +334,23 @@ export default function FireFighterDashboard() {
 }
 
 // ✅ Reusable Components
-const BackButton = ({ onPress }) => (
-  <TouchableOpacity style={styles.backButtonOverlay} onPress={onPress}>
-    <Text style={styles.backText}>⬅ Back</Text>
-  </TouchableOpacity>
-);
-
-const DashboardButton = ({ text, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
-    <Text style={styles.cardText}>{text}</Text>
+const DashboardButton = ({
+  text,
+  onPress,
+  heightMultiplier = 0.06,
+  widthPercentage = 0.7,
+}) => (
+  <TouchableOpacity
+    style={[
+      styles.card,
+      {
+        paddingVertical: height * heightMultiplier,
+        width: `${widthPercentage * 100}%`,
+      },
+    ]}
+    onPress={onPress}
+  >
+    <Text style={[styles.cardText, { fontSize: width * 0.04 }]}>{text}</Text>
   </TouchableOpacity>
 );
 
@@ -270,20 +360,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: width * 0.05,
     backgroundColor: "#f4f6f9",
   },
   header: {
-    fontSize: 26,
-    marginBottom: 40,
     fontWeight: "bold",
     color: "#b30d0d",
   },
   card: {
     width: "80%",
     backgroundColor: "#fff",
-    paddingVertical: 20,
-    marginBottom: 20,
+    marginBottom: height * 0.02,
     borderRadius: 15,
     alignItems: "center",
     shadowColor: "#000",
@@ -293,31 +380,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardText: {
-    fontSize: 18,
     fontWeight: "600",
     color: "#333",
-  },
-  backButtonOverlay: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: "#3a3434ff",
-    borderRadius: 8,
-    zIndex: 10,
-  },
-  backText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
   },
   centered: { alignItems: "center" },
   hydrantOption: {
     backgroundColor: "#fff",
-    padding: 15,
     borderRadius: 10,
-    marginVertical: 8,
+    marginVertical: height * 0.01,
     width: "90%",
     alignSelf: "center",
     alignItems: "center",
@@ -326,12 +396,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  hydrantText: { fontSize: 16, color: "#333", fontWeight: "600" },
+  hydrantText: { fontWeight: "600", color: "#333" },
   hydrantHeader: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 10,
-    marginTop: 110,
+    fontWeight: "700",
+    marginBottom: height * 0.02,
+    color: "#b30d0d",
+    textAlign: "center",
   },
   screen: {
     flex: 1,

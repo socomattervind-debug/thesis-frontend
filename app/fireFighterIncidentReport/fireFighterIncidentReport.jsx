@@ -1,9 +1,9 @@
+import DateTimePicker from "@react-native-community/datetimepicker"; // 📅 Import Date Picker
 import { Picker } from "@react-native-picker/picker";
 import { useState } from "react";
 import {
   Alert,
   Dimensions,
-  ImageBackground,
   Platform,
   StyleSheet,
   Text,
@@ -20,31 +20,25 @@ export default function FireFighterIncidentReport() {
   const [city, setCity] = useState("");
   const [barangay, setBarangay] = useState("");
   const [address, setAddress] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date()); // store as Date object
+  const [showDatePicker, setShowDatePicker] = useState(false); // controls calendar visibility
   const [timeArrival, setTimeArrival] = useState("");
   const [timeFinished, setTimeFinished] = useState("");
   const [cause, setCause] = useState("");
-  const [severity, setSeverity] = useState("Minor"); // default value
+  const [severity, setSeverity] = useState("Minor");
 
   const handleSubmitButton = async () => {
     if (!city.trim()) return Alert.alert("Error", "City is required");
     if (!barangay.trim()) return Alert.alert("Error", "Barangay is required");
     if (!address.trim()) return Alert.alert("Error", "Address is required");
-    if (!date.trim()) return Alert.alert("Error", "Date is required");
+    if (!date) return Alert.alert("Error", "Date is required");
 
-    let formattedDate = date.trim();
-
-    // ✅ Convert YYYY-MM-DD → "Month, Day, Year"
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      const dateObj = new Date(date);
-      if (!isNaN(dateObj)) {
-        formattedDate = dateObj.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      }
-    }
+    // format date properly
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
     const reportData = {
       city,
@@ -58,14 +52,12 @@ export default function FireFighterIncidentReport() {
     };
 
     try {
-      const response = await addFireIncidentRecord(reportData);
-      console.log("API Response:", response);
-
+      await addFireIncidentRecord(reportData);
       Alert.alert("Success", "Report submitted successfully!");
       setCity("");
       setBarangay("");
       setAddress("");
-      setDate("");
+      setDate(new Date());
       setTimeArrival("");
       setTimeFinished("");
       setCause("");
@@ -76,16 +68,15 @@ export default function FireFighterIncidentReport() {
     }
   };
 
+  const onChangeDate = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) setDate(selectedDate);
+  };
+
   return (
     <View style={styles.wrapper}>
-      {/* 🔥 Background Image */}
-      <ImageBackground
-        source={require("../../assets/images/fire-fighter-incident-report-background.png")}
-        style={styles.background}
-        resizeMode="cover"
-      />
+      <Text style={styles.title}>Incident Report</Text>
 
-      {/* 🔥 Scrollable Form */}
       <KeyboardAwareScrollView
         contentContainerStyle={styles.scrollContainer}
         enableOnAndroid={true}
@@ -93,7 +84,7 @@ export default function FireFighterIncidentReport() {
         keyboardShouldPersistTaps="handled"
         keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
       >
-        <View style={styles.container}>
+        <View style={styles.form}>
           <TextInput
             style={styles.input}
             placeholder="City"
@@ -115,20 +106,38 @@ export default function FireFighterIncidentReport() {
             onChangeText={setAddress}
             placeholderTextColor="#333"
           />
-          <TextInput
+
+          {/* 📅 Date Picker Field */}
+          <TouchableOpacity
             style={styles.input}
-            placeholder="Date (e.g. 2025-10-07 or October 7, 2025)"
-            value={date}
-            onChangeText={setDate}
-            placeholderTextColor="#333"
-          />
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={{ color: "#333", fontSize: width * 0.04 }}>
+              {date
+                ? date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "Select Date"}
+            </Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="calendar"
+              onChange={onChangeDate}
+            />
+          )}
+
           <TextInput
             style={styles.input}
             placeholder="Time of Arrival (e.g. 9:45 AM)"
             value={timeArrival}
             onChangeText={setTimeArrival}
             placeholderTextColor="#333"
-            keyboardType="numbers-and-punctuation"
           />
           <TextInput
             style={styles.input}
@@ -136,7 +145,6 @@ export default function FireFighterIncidentReport() {
             value={timeFinished}
             onChangeText={setTimeFinished}
             placeholderTextColor="#333"
-            keyboardType="numbers-and-punctuation"
           />
           <TextInput
             style={styles.input}
@@ -146,7 +154,7 @@ export default function FireFighterIncidentReport() {
             placeholderTextColor="#333"
           />
 
-          {/* 🔥 Severity Dropdown */}
+          {/* Severity Dropdown */}
           <View style={styles.pickerContainer}>
             <Text style={styles.label}>Severity of Fire:</Text>
             <Picker
@@ -176,71 +184,76 @@ export default function FireFighterIncidentReport() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    backgroundColor: "#FF5C3A", // 🔥 orange-red background
     width: "100%",
-    height: "100%",
   },
-  background: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: width,
-    height: height,
+  title: {
+    textAlign: "center",
+    fontSize: width * 0.09,
+    fontWeight: "bold",
+    color: "#fff",
+    marginTop: height * 0.08,
+    textShadowColor: "rgba(0,0,0,0.3)",
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingBottom: 40,
+    justifyContent: "flex-end",
+    paddingBottom: height * 0.05,
   },
-  container: {
-    flex: 1,
-    width: "100%",
-    paddingHorizontal: 20,
-    justifyContent: "center",
+  form: {
+    width: "90%",
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingVertical: height * 0.03,
+    paddingHorizontal: width * 0.05,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
   input: {
-    backgroundColor: "rgba(255,255,255,0.85)",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    position: "relative",
-    top: 120,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 10,
+    paddingVertical: height * 0.018,
+    paddingHorizontal: width * 0.04,
+    fontSize: width * 0.04,
+    marginBottom: height * 0.02,
   },
   pickerContainer: {
-    backgroundColor: "rgba(255,255,255,0.85)",
-    borderRadius: 12,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    position: "relative",
-    top: 120,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 10,
+    marginBottom: height * 0.025,
+    paddingHorizontal: width * 0.02,
   },
   label: {
-    color: "#333",
-    fontSize: 16,
-    marginTop: 10,
     fontWeight: "bold",
+    color: "#333",
+    fontSize: width * 0.04,
+    marginVertical: height * 0.01,
   },
   picker: {
-    width: "100%",
     color: "#000",
+    width: "100%",
   },
   submitButton: {
     backgroundColor: "#FFD700",
-    padding: 15,
-    borderRadius: 12,
+    paddingVertical: height * 0.02,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 10,
-    position: "relative",
-    top: 110,
-    width: "150%",
-    left: -20,
+    justifyContent: "center",
+    width: "100%",
+    marginTop: height * 0.015,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
   },
   submitButtonText: {
     color: "#000",
     fontWeight: "bold",
-    fontSize: 18,
-    marginRight: 120,
+    fontSize: width * 0.045,
   },
 });

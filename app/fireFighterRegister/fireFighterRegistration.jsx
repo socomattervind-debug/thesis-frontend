@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
+  Dimensions,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +14,8 @@ import {
   View,
 } from "react-native";
 import { registerFireFighter } from "../service/api/RegisterFireFighter";
+
+const { width, height } = Dimensions.get("window");
 
 export default function FireFighterRegistration() {
   const router = useRouter();
@@ -34,11 +37,6 @@ export default function FireFighterRegistration() {
 
     Alert.alert("Sign Up", `Full Name: ${fullName}\nBarangay: ${barangay}`);
 
-    console.log(
-      `Full Name: ${fullName}\nBarangay: ${barangay}\nPassword: ${password}`
-    );
-
-    //for services API
     try {
       const data = await registerFireFighter({
         fullName,
@@ -54,6 +52,7 @@ export default function FireFighterRegistration() {
     setPassword("");
     setConfirmPassword("");
     setBarangay("");
+    router.ppush("/dashboard/dashboard");
   };
 
   const handleSignIn = () => {
@@ -77,7 +76,7 @@ export default function FireFighterRegistration() {
           >
             <TextInput
               style={styles.input}
-              placeholder="Username(ex:soco.dampalit)"
+              placeholder="Username (ex: soco.dampalit)"
               value={fullName}
               onChangeText={setFullName}
               placeholderTextColor="#000"
@@ -135,42 +134,56 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   background: {
     flex: 1,
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingVertical: 50,
+    width: "100%",
+    height: "100%",
   },
   formContainer: {
-    width: "100%",
+    flexGrow: 1,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 30,
-    paddingBottom: 20,
-    paddingTop: 95,
+    paddingHorizontal: width * 0.08,
+    paddingTop: height * 0.15,
+    paddingBottom: height * 0.1,
   },
   input: {
-    width: 250,
+    width: "80%",
     backgroundColor: "rgba(255,255,255,0.9)",
-    padding: 12,
+    paddingVertical: height * 0.018,
     borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
+    marginBottom: height * 0.02,
+    fontSize: width * 0.045,
     textAlign: "center",
     color: "#000",
-    marginTop: 10,
-    position: "relative",
-    top: 30,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
   },
   button: {
-    width: 250,
+    width: "80%",
     backgroundColor: "#b30d0dff",
-    padding: 15,
+    paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 40,
+    marginTop: height * 0.02,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-
-  buttonText: { color: "#161515ff", fontSize: 18, fontWeight: "bold" },
-  signInContainer: { marginTop: 15 },
-  signInText: { fontSize: 16, color: "#000" },
-  signInLink: { color: "#b30d0dff", fontWeight: "bold" },
+  buttonText: {
+    color: "#161515ff",
+    fontSize: width * 0.045,
+    fontWeight: "bold",
+  },
+  signInContainer: {
+    marginTop: height * 0.02,
+  },
+  signInText: {
+    fontSize: width * 0.04,
+    color: "#000",
+  },
+  signInLink: {
+    color: "#b30d0dff",
+    fontWeight: "bold",
+  },
 });

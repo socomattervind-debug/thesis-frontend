@@ -1,11 +1,14 @@
 import { useRouter } from "expo-router";
 import {
+  Dimensions,
   ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function Dashboard() {
   const router = useRouter();
@@ -29,21 +32,23 @@ export default function Dashboard() {
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={styles.centerButtons}>
-          <TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
+        <View style={styles.overlay}>
+          <View style={styles.centerButtons}>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.buttonRegister}
-            onPress={handleRegistration}
-          >
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleRegistration}
+            >
+              <Text style={styles.buttonText}>Register</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonAsAdmin} onPress={handleAdmin}>
-            <Text style={styles.buttonText}>View All Records</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleAdmin}>
+              <Text style={styles.buttonText}>View All Records</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ImageBackground>
     </View>
@@ -56,60 +61,36 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "space-between",
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end", // push content downward
     alignItems: "center",
-    paddingVertical: 50,
+    paddingBottom: height * 0.15, // move buttons lower
+    paddingHorizontal: width * 0.1,
   },
   centerButtons: {
+    width: "100%",
     alignItems: "center",
-    gap: 20,
+    gap: height * 0.03,
   },
-  buttonLogin: {
+  button: {
     backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    width: 200,
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.1,
+    borderRadius: 10,
+    width: "70%",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 3,
-    position: "absolute",
-    top: 360,
-  },
-  buttonRegister: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    width: 200,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-    position: "absolute",
-    top: 450,
-  },
-  buttonAsAdmin: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    width: 200,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-    position: "absolute",
-    top: 540,
   },
   buttonText: {
     color: "#000",
-    fontSize: 16,
+    fontSize: width * 0.045,
     fontWeight: "bold",
     textAlign: "center",
   },
